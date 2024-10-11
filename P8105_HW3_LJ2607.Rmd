@@ -1,0 +1,7 @@
+---
+title: "P8105-HW3-lj2607"
+author: "Li Jiang"
+date: "2024-10-11"
+output: github-document
+---
+
