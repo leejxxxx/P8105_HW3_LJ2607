@@ -5,3 +5,65 @@ date: "2024-10-11"
 output: github-document
 ---
 
+```{r}
+#load the required packages
+library(tidyverse)
+library(lubridate)
+```
+
+Problem1
+
+```{r}
+#load the required dataset
+library(p8105.datasets)
+data("ny_noaa")
+
+#view the dataset
+head(ny_noaa)
+```
+
+```{r}
+#Data cleaning
+ny_noaa_df = ny_noaa %>%
+  janitor::clean_names()%>%
+  drop_na() %>%
+  mutate(
+    year = year(date), 
+    month = month(date),
+    day = day(date),
+    tmin = as.numeric(tmin) / 10,
+    tmax = as.numeric(tmax) / 10,
+    prcp = as.numeric(prcp),
+    snowfall = as.numeric(snow)
+)
+
+#look at the data
+view(ny_noaa_df)
+```
+
+```{r}
+#Checking the most common value in snowfall
+snowfall_table <- table(ny_noaa_df$snowfall)%>% 
+  sort(snowfall_table, decreasing = TRUE)
+
+view(snowfall_table)
+
+#create histogram for better visualization
+ggplot(ny_noaa_df,aes(x = snowfall))+geom_histogram()
+
+```
+
+0 is the most commonly observed value for snowfall. This actually makes sense because it usually snows during winter, which leads 0 value to be of highest frequency in dataset.
+
+```{r}
+#two-panel plot showing the average max temperature in Jan and Jul in each station across years
+ny_noaa_df %>% 
+  filter(month %in% c(1, 7)) %>% 
+  select(id, year, month) %>% 
+  mutate(mean_tmax = mean(ny_noaa_df$tmax, na.rm = TRUE)) %>% 
+  ggplot(aes(x = year, y = mean_tmax, color = id)) +
+  geom_point(show.legend = F) +
+  facet_grid(. ~ month)
+
+view(ny_noaa_df)
+```
