@@ -9,6 +9,7 @@ output: github-document
 #load the required packages
 library(tidyverse)
 library(lubridate)
+library(readxl)
 ```
 
 Problem1
@@ -57,13 +58,86 @@ ggplot(ny_noaa_df,aes(x = snowfall))+geom_histogram()
 
 ```{r}
 #two-panel plot showing the average max temperature in Jan and Jul in each station across years
-ny_noaa_df %>% 
+ny_noaa_clean <- ny_noaa_df %>%
   filter(month %in% c(1, 7)) %>% 
   select(id, year, month) %>% 
-  mutate(mean_tmax = mean(ny_noaa_df$tmax, na.rm = TRUE)) %>% 
-  ggplot(aes(x = year, y = mean_tmax, color = id)) +
+  mutate(mean_tmax = mean(ny_noaa_df$tmax, na.rm = TRUE))
+```
+
+
+```{r}
+ggplot(ny_noaa_clean,aes(x = year, y = mean_tmax, color = id)) +
   geom_point(show.legend = F) +
   facet_grid(. ~ month)
-
-view(ny_noaa_df)
 ```
+
+Problem 2
+
+```{r}
+#Import dataset accelerometer 
+accelerometer <- read.csv("Problem2/nhanes_accel.csv")%>%
+  janitor::clean_names()
+View(accelerometer)
+```
+
+```{r}
+#Import dataset demographic
+demo <- read.csv("Problem2/nhanes_covar.csv",skip = 4,na = c("NA", "", "."))%>%
+  janitor::clean_names()
+view(demo)
+```
+
+```{r}
+#Merge two datasets
+participants <- left_join(accelerometer,demo, by = 'seqn')
+view(participants)
+```
+
+```{r}
+#data cleaning
+participants_clean <- participants %>%
+  relocate(sex,age,bmi,education,.before = min1)%>%
+  filter(age >= 21) %>%
+  drop_na(sex,age,bmi,education)%>%
+  mutate(
+    sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")),
+    education = factor(education, levels = c(1, 2, 3), labels = c("Less than high school", "High school equivalent", "More than high school")),
+    age = as.numeric(age),
+    bmi = as.numeric(bmi))
+```
+
+```{r}
+#table for men and women in each education category
+sex_distribution <- participants_clean%>%
+  group_by(education, sex) %>%
+  summarize(count = n())
+
+sex_distribution_table <- pivot_wider(
+  sex_distribution,
+  names_from = sex,
+  values_from = count,
+  values_fill = list(count = 0))
+
+knitr::kable(sex_distribution)
+```
+
+
+```{r}
+#age distribution in each education category
+age_distribution <- participants_clean%>%
+  group_by(education, sex, age)%>%
+  select(education, sex, age)
+
+ggplot(age_distribution, aes(x = age, fill = sex)) +
+  geom_histogram(binwidth = 5, position = "dodge", alpha = 0.7) +
+  facet_wrap(~ education) +
+  labs(title = "Age Distribution by Sex in Each Education Category",
+       x = "Age",
+       y = "Count")
+```
+
+```{r}
+
+```
+
+
