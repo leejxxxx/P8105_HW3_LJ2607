@@ -137,7 +137,52 @@ ggplot(age_distribution, aes(x = age, fill = sex)) +
 ```
 
 ```{r}
+#Plot total activity against age in each education category
+total_activity <- participants_clean%>%
+  mutate(
+    total_activity = rowSums(select(., starts_with("min")), na.rm = TRUE))%>%
+  relocate(total_activity,.before = min1)%>%
+  select(seqn,sex,age,education,total_activity)
 
+
+ggplot(total_activity, aes(x = age,y = total_activity, color = sex)) +
+  geom_smooth(se = FALSE)+
+  geom_point(size = 2, position = position_dodge(width = 0.5), alpha = 0.7)+
+  facet_wrap(~ education) +
+  labs(title = "total activity by Sex in Each Education Category",
+       x = "Age",
+       y = "total_activity")
 ```
 
+
+```{r}
+#24-hour activity time course for each education level and gender
+mean_min_by_sex_education <- participants_clean %>%
+  group_by(sex, education) %>%
+  summarise(across(starts_with("min"), mean, na.rm = TRUE))
+
+mean_min_long <- mean_min_by_sex_education %>%
+  pivot_longer(
+    cols = starts_with("min"), 
+    names_to = "minute", 
+    names_prefix = 'min',
+    values_to = 'mean'
+  )%>%
+  mutate(minute = as.numeric(minute))
+
+ggplot(mean_min_long, mapping=aes(x=minute, y=mean, color=sex)) + geom_point(size=0.5) + theme_light() + facet_grid(.~ education) +
+  geom_smooth(size=0.7) + scale_x_continuous(limits=c(0, 1440)) +
+  scale_y_continuous(limits=c(0,18), breaks=seq(0,18, by=3)) + xlab("24-hour activity time courses") + ylab("mean acceleorometers value per minute") +
+  ggtitle("Scatterplot of  the mean acceleorometers readings per minute against 24-hour activity ") + theme(legend.position = "bottom", plot.title=element_text(hjust=.5))
+```
+
+
+#Problem3
+
+
+
+
+```{r}
+
+```
 
