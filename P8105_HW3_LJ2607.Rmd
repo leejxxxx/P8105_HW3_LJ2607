@@ -10,6 +10,7 @@ output: github-document
 library(tidyverse)
 library(lubridate)
 library(readxl)
+library(stringr)
 ```
 
 Problem1
@@ -71,7 +72,7 @@ ggplot(ny_noaa_clean,aes(x = year, y = mean_tmax, color = id)) +
   facet_grid(. ~ month)
 ```
 
-Problem 2
+#Problem 2
 
 ```{r}
 #Import dataset accelerometer 
@@ -180,9 +181,102 @@ ggplot(mean_min_long, mapping=aes(x=minute, y=mean, color=sex)) + geom_point(siz
 #Problem3
 
 
+```{r}
+#Import 4 datasets
+Jan_2020 <- read_csv("Problem3/Jan 2020 Citi.csv",na = c("NA", "", ".","unknown"))%>%
+  janitor::clean_names()%>%
+  mutate(
+    year = 2020, month = 'January')
+
+Jan_2024 <- read_csv("Problem3/Jan 2024 Citi.csv",na = c("NA", "", ".","unknown"))%>%
+  janitor::clean_names()%>%
+  mutate(
+    year = 2024, month = 'January')
+
+July_2020 <- read_csv("Problem3/July 2020 Citi.csv",na = c("NA", "", ".","unknown"))%>%
+  janitor::clean_names()%>%
+  mutate(
+    year = 2020, month = 'July')
+
+July_2024 <- read_csv("Problem3/July 2024 Citi.csv",na = c("NA", "", ".","unknown"))%>%
+  janitor::clean_names()%>%
+  mutate(
+    year = 2024, month = 'July')
+```
+
+```{r}
+#merge 4 datasets
+nyc_rider_df <- bind_rows(Jan_2020,July_2020,Jan_2024,July_2024)%>%
+  relocate(year, month,.before = weekdays)
+```
+
+```{r}
+#produce table showing total number of riders in each year and month seprating casual rider and member
+
+total_rider <- nyc_rider_df%>%
+  mutate(year_month = str_c(year,month,sep = "_"))%>%
+  select(ride_id,year_month,member_casual)%>%
+  group_by(year_month,member_casual)%>%
+  summarize(count = n())
+
+total_rider_table <- pivot_wider(
+  total_rider,
+  names_from = year_month,
+  values_from = count)
+
+knitr::kable(total_rider_table)
+  
+```
+
+```{r}
+#checking na in dataset July_2024
+na_rows <- July_2024[!complete.cases(July_2024), ]
+
+#Since several starting stations contain null value, I decided to drop na
+July_2024_clean <- July_2024%>%
+  drop_na(start_station_name)%>%
+  select(ride_id,start_station_name)
+
+#Create table showing 5 most popular starting stations for July 2024
+July_2024_clean_table <- July_2024_clean%>%
+  group_by(start_station_name)%>%
+  summarize(count = n())%>%
+  arrange(desc(count))
+```
 
 
 ```{r}
+#Create a table including day of the week,month,year, median ride duration
+
+median_duration <- nyc_rider_df %>%
+  mutate(weekdays = factor(weekdays, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))) %>%
+  select(year, month, weekdays, duration) %>%
+  group_by(year, month, weekdays) %>%
+  summarise(median_duration = median(duration, na.rm = TRUE))
+
+ggplot(median_duration,aes(x = weekdays, y = median_duration))+
+  geom_point(aes(color = month),alpha = .5)+
+  geom_smooth(se = FALSE)+
+  facet_grid(.~year)+
+  labs(title = "Median Ride Duration by Weekday, Month, and Year",
+       x = "Day of the Week",
+       y = "Median Ride Duration (minutes)",
+       color = "Month")
+```
+
+
+```{r}
+ggplot(median_duration, aes(x = weekdays, y = median_duration, fill = month)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~ year) +
+  labs(
+    title = "Median Ride Duration by Day of the Week, Month, and Year",
+    x = "Day of the Week",
+    y = "Median Ride Duration (minutes)",
+    fill = "Month"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
