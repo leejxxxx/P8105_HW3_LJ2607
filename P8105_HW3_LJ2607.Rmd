@@ -54,7 +54,7 @@ view(snowfall_table)
 ggplot(ny_noaa_df,aes(x = snowfall))+geom_histogram()
 
 ```
-
+*Comments:
 0 is the most commonly observed value for snowfall. This actually makes sense because it usually snows during winter, which leads 0 value to be of highest frequency in dataset.
 
 ```{r}
@@ -296,15 +296,26 @@ The median ride duration in July tends to be higher than median ride duration in
 The median ride duration tends to be higher in weekends comparing to weekdays.
 
 ```{r}
+#Figure that shows the impact of month,membership status, bike type on distribution of duration in 2024
+
 bikes_2024 <- nyc_rider_df%>%
   filter(year == 2024)%>%
-  select(ride_id,rideable_type,year,month,member_casual)%>%
-  group_by(rideable_type,month,member_casual)%>%
-  summarize(count = n())
+  group_by(rideable_type,month,member_casual)
 
-ggplot(bikes_2024,aes(x = rideable_type, fill = count))+
-  geom_histogram(position = 'dodge', binwidth = 2)+
-  facet_grid(.~month)
+bikes_2024_plot <- ggplot(bikes_2024,aes(x = duration,fill = factor(member_casual))) +
+  geom_histogram(binwidth =10, position = "dodge", alpha = 0.9) +
+  facet_grid(month ~ rideable_type)+
+     labs(
+       title = "Histogram of Ride Duration by Member Status, Month, and Bike Type 2024",
+       x = "Ride Duration (minutes)",
+       y = "Count",
+       fill = "Member_casual")
+
+print(bikes_2024_plot)
 ```
-
+*Comments:
+The distribution of electric bikes is higher for shorter rides compared to classic bikes. 
+Member tend to have higher ride duration compared to casual rides.
+July has significantly more rides compared to January.
+Even though casual rides have lower ride duration, it is more spread compared to member rides.
 
