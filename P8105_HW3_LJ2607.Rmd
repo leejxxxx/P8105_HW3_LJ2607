@@ -2,7 +2,7 @@
 title: "P8105-HW3-lj2607"
 author: "Li Jiang"
 date: "2024-10-11"
-output: github-document
+output: github_document
 ---
 
 ```{r}
@@ -45,14 +45,17 @@ view(ny_noaa_df)
 
 ```{r}
 #Checking the most common value in snowfall
-snowfall_table <- table(ny_noaa_df$snowfall)%>% 
-  sort(snowfall_table, decreasing = TRUE)
-
-view(snowfall_table)
-
-#create histogram for better visualization
-ggplot(ny_noaa_df,aes(x = snowfall))+geom_histogram()
-
+snowfall_distribution_plot <- ny_noaa |>
+  filter(snow > 0 & snow < 100) |>
+  ggplot(aes(x = factor(year), y = snow)) +
+  geom_boxplot() +
+  labs(
+    title = "Distribution of Snowfall Values (> 0 and < 100 mm) by Year",
+    x = "Year",
+    y = "Snowfall (mm)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 *Comments:
 0 is the most commonly observed value for snowfall. This actually makes sense because it usually snows during winter, which leads 0 value to be of highest frequency in dataset.
