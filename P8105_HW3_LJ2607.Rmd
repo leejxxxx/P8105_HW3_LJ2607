@@ -13,7 +13,7 @@ library(readxl)
 library(stringr)
 ```
 
-Problem1
+#Problem1
 
 ```{r}
 #load the required dataset
@@ -63,13 +63,6 @@ ny_noaa_clean <- ny_noaa_df %>%
   filter(month %in% c(1, 7)) %>% 
   select(id, year, month) %>% 
   mutate(mean_tmax = mean(ny_noaa_df$tmax, na.rm = TRUE))
-```
-
-
-```{r}
-ggplot(ny_noaa_clean,aes(x = year, y = mean_tmax, color = id)) +
-  geom_point(show.legend = F) +
-  facet_grid(. ~ month)
 ```
 
 #Problem 2
@@ -137,6 +130,10 @@ ggplot(age_distribution, aes(x = age, fill = sex)) +
        y = "Count")
 ```
 
+*Comments:
+*For the reader-friendly table: the distribution of women and men is nearly equal in 'less than high school'. In 'high school equivalent', there are more males than females. In "more than high school', there are slightly more females than males.
+*For age distribution plot: The distribution of age in males and females is nearly equal in 'less than high school'. The overall age of females is higher than the overall age of males and males have relatively lower median and mean. The distribution of age by sex is nearly the same in 'more than high school' while the median of age in females is lower than the the median of age in males.
+
 ```{r}
 #Plot total activity against age in each education category
 total_activity <- participants_clean%>%
@@ -154,6 +151,12 @@ ggplot(total_activity, aes(x = age,y = total_activity, color = sex)) +
        x = "Age",
        y = "total_activity")
 ```
+*Comments: In each education category, there is a general decreasing trend for total activity as ages increases.In the "Less than high school" group, physical activity decreases with age for both men and women, with some fluctuations around ages 50-60, and individual variations are evident.
+
+In the "High school equivalent" group, women generally have higher activity levels than men, particularly between ages 30-50. Activity decreases after age 40 for both sexes but increases before 40.
+
+In the "More than high school" group, activity patterns are stable across ages, with women typically more active than men. Activity declines for both sexes after age 60.
+
 
 
 ```{r}
@@ -171,12 +174,16 @@ mean_min_long <- mean_min_by_sex_education %>%
   )%>%
   mutate(minute = as.numeric(minute))
 
-ggplot(mean_min_long, mapping=aes(x=minute, y=mean, color=sex)) + geom_point(size=0.5) + theme_light() + facet_grid(.~ education) +
+ggplot(mean_min_long, mapping=aes(x=minute, y=mean, color=sex)) + geom_line(size=0.5) + theme_light() + facet_grid(.~ education) +
   geom_smooth(size=0.7) + scale_x_continuous(limits=c(0, 1440)) +
   scale_y_continuous(limits=c(0,18), breaks=seq(0,18, by=3)) + xlab("24-hour activity time courses") + ylab("mean acceleorometers value per minute") +
   ggtitle("Scatterplot of  the mean acceleorometers readings per minute against 24-hour activity ") + theme(legend.position = "bottom", plot.title=element_text(hjust=.5))
 ```
-
+*Comments
+The 24-hour activity time courses are similar in each education category with peak at 750 and lowest point at 250.
+Less than high school: Both men and women have low activity levels in the early morning (around 250min) and peak in the afternoon followed by a steady decline until night.
+High school equivalent: Both men and women also show low activity in the early morning, with peaks in the afternoon then decrease steadily into the night.
+More than high school: The trend is similar to the "High school equivalent" group, but women show significantly higher activity levels than men during peak periods.
 
 #Problem3
 
@@ -211,6 +218,15 @@ nyc_rider_df <- bind_rows(Jan_2020,July_2020,Jan_2024,July_2024)%>%
 ```
 
 ```{r}
+nrow(nyc_rider_df)
+summary(nyc_rider_df)
+variable.names(nyc_rider_df)
+```
+
+*Description of dataset:
+The cleaned nyc_rider dataset contains 99485 observations and 9 variables, containing ride information in January and July in 2020 and 2024. Key variables include "ride_id","rideable_type","year","month"           "weekdays","duration","start_station_name","end_station_name","member_casual" as indicator of member rider or casual rider status. The cleaning process include merging four corresponding datasets and cleaning column names.
+
+```{r}
 #produce table showing total number of riders in each year and month seprating casual rider and member
 
 total_rider <- nyc_rider_df%>%
@@ -227,6 +243,14 @@ total_rider_table <- pivot_wider(
 knitr::kable(total_rider_table)
   
 ```
+*Comments: The dataset summarized the number of casual and member rides for two specific time points: January and July of 2020 and 2024.
+
+Casual users: The number of casual rides increased significantly over time, from 984 in January 2020 to 10,894 in July 2024. There is also a noticeable seasonal difference, with higher counts in July compared to January in both years.
+
+Member users: Member rides consistently outnumber casual rides, indicating potential benefits of being member. Their numbers also grew from 11,436 in January 2020 to 36,262 in July 2024. Similar to casual rides, there are higher counts in July than in January each year.
+
+Both casual and member rides increased over the years, with a clear seasonal pattern showing higher activity in July. 
+
 
 ```{r}
 #checking na in dataset July_2024
@@ -242,6 +266,7 @@ July_2024_clean_table <- July_2024_clean%>%
   group_by(start_station_name)%>%
   summarize(count = n())%>%
   arrange(desc(count))
+view(July_2024_clean_table)
 ```
 
 
@@ -254,29 +279,32 @@ median_duration <- nyc_rider_df %>%
   group_by(year, month, weekdays) %>%
   summarise(median_duration = median(duration, na.rm = TRUE))
 
-ggplot(median_duration,aes(x = weekdays, y = median_duration))+
-  geom_point(aes(color = month),alpha = .5)+
-  geom_smooth(se = FALSE)+
+ggplot(median_duration,aes(x = weekdays, y = median_duration, group = month,color = month))+
+  geom_line(aes(color = month),alpha = .5)+
   facet_grid(.~year)+
   labs(title = "Median Ride Duration by Weekday, Month, and Year",
        x = "Day of the Week",
        y = "Median Ride Duration (minutes)",
-       color = "Month")
+       color = "Month")+
+   theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = "bottom")
 ```
-
+*Comments:
+The median ride duration is much higher in 2020 compared to 2024.
+The median ride duration in July tends to be higher than median ride duration in January.
+The median ride duration tends to be higher in weekends comparing to weekdays.
 
 ```{r}
-ggplot(median_duration, aes(x = weekdays, y = median_duration, fill = month)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  facet_wrap(~ year) +
-  labs(
-    title = "Median Ride Duration by Day of the Week, Month, and Year",
-    x = "Day of the Week",
-    y = "Median Ride Duration (minutes)",
-    fill = "Month"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+bikes_2024 <- nyc_rider_df%>%
+  filter(year == 2024)%>%
+  select(ride_id,rideable_type,year,month,member_casual)%>%
+  group_by(rideable_type,month,member_casual)%>%
+  summarize(count = n())
 
+ggplot(bikes_2024,aes(x = rideable_type, fill = count))+
+  geom_histogram(position = 'dodge', binwidth = 2)+
+  facet_grid(.~month)
 ```
+
 
