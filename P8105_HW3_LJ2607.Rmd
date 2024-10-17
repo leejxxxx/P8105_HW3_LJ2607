@@ -131,6 +131,7 @@ ggplot(age_distribution, aes(x = age, fill = sex)) +
   labs(title = "Age Distribution by Sex in Each Education Category",
        x = "Age",
        y = "Count")
+ggsave("age_distribution.png")
 ```
 
 *Comments:
@@ -153,6 +154,7 @@ ggplot(total_activity, aes(x = age,y = total_activity, color = sex)) +
   labs(title = "total activity by Sex in Each Education Category",
        x = "Age",
        y = "total_activity")
+ggsave("total_activity.png")
 ```
 *Comments: In each education category, there is a general decreasing trend for total activity as ages increases.In the "Less than high school" group, physical activity decreases with age for both men and women, with some fluctuations around ages 50-60, and individual variations are evident.
 
@@ -181,6 +183,7 @@ ggplot(mean_min_long, mapping=aes(x=minute, y=mean, color=sex)) + geom_line(size
   geom_smooth(size=0.7) + scale_x_continuous(limits=c(0, 1440)) +
   scale_y_continuous(limits=c(0,18), breaks=seq(0,18, by=3)) + xlab("24-hour activity time courses") + ylab("mean acceleorometers value per minute") +
   ggtitle("Scatterplot of  the mean acceleorometers readings per minute against 24-hour activity ") + theme(legend.position = "bottom", plot.title=element_text(hjust=.5))
+ggsave("mean_min_long.png")
 ```
 *Comments
 The 24-hour activity time courses are similar in each education category with peak at 750 and lowest point at 250.
@@ -292,6 +295,7 @@ ggplot(median_duration,aes(x = weekdays, y = median_duration, group = month,colo
    theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(legend.position = "bottom")
+ggsave("median_duration.png")
 ```
 *Comments:
 The median ride duration is much higher in 2020 compared to 2024.
@@ -315,6 +319,7 @@ bikes_2024_plot <- ggplot(bikes_2024,aes(x = duration,fill = factor(member_casua
        fill = "Member_casual")
 
 print(bikes_2024_plot)
+ggsave("bikes_2024_plot.png")
 ```
 *Comments:
 The distribution of electric bikes is higher for shorter rides compared to classic bikes. 
